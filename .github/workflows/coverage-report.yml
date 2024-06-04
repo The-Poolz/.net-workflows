@@ -27,14 +27,7 @@ jobs:
       run: |
         dotnet test --no-restore --no-build --collect:"XPlat Code Coverage"
         reportgenerator "-reports:**/coverage.cobertura.xml;" "-targetdir:${{github.workspace}}/report" "-reporttypes:MarkdownSummaryGithub"
-    - name: Upload reports
-      uses: actions/upload-artifact@v2
-      if: ${{always()}}
-      with:
-        name: 'Code Coverage'
-        path: |
-          ${{github.workspace}}/report
-      
+
     - name: Comments on PR with coverage report results
       uses: marocchino/sticky-pull-request-comment@v2
       env:
