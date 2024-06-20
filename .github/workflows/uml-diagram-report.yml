@@ -38,7 +38,7 @@ jobs:
       run: pip install plantuml
 
     - name: Write URL to file
-      run: python generate-uml-diagram-report.py
+      run: python .net-workflows/generate-uml-diagram-report.py
       env:
         FILE_PATH: ./diagrams/
 
