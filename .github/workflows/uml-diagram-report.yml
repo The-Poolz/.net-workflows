@@ -1,0 +1,54 @@
+name: Generate UML Diagram
+
+on:
+  workflow_call:
+
+jobs:
+
+  uml-diagram-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.head_ref }}
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Install PlantUMLClassDiagramGenerator
+      run: dotnet tool install --global PlantUmlClassDiagramGenerator
+
+    - name: Generate UML Diagram
+      run: |
+        puml-gen ./ ./diagrams/ -dir -allInOne -createAssociation -excludePaths **/tests
+
+    - name: Download plantuml
+      run: pip install plantuml
+
+    - name: Write URL to file
+      run: python generate-uml-diagram-report.py
+      env:
+        FILE_PATH: ./diagrams/
+
+    - name: Comment PR with URL
+      uses: marocchino/sticky-pull-request-comment@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        recreate: true
+        header: Diagram URL
+        path: ${{github.workspace}}/uml-diagram-report.txt
+
+    - name: Commit and Push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add diagrams/
+        git commit -m "Add generated UML diagrams" || echo "No changes to commit"
+        git pull --rebase origin ${{ github.head_ref }}
+        git push origin HEAD:${{ github.head_ref }}
