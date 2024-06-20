@@ -15,6 +15,13 @@ jobs:
         fetch-depth: 0
         ref: ${{ github.head_ref }}
 
+    - name: Checkout solidity workflows repository
+      uses: actions/checkout@v4
+      with:
+        repository: The-Poolz/.net-workflows
+        ref: master
+        path: .net-workflows
+  
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
       with:
