@@ -28,5 +28,5 @@ def generate_urls(directory, output_file):
 if __name__ == "__main__":
     # Getting directory path from environment variable or using default value
     directory = os.getenv('FILE_PATH', '.')
-    output_file = 'uml-diagram-report'
+    output_file = 'uml-diagram-report.txt'
     generate_urls(directory, output_file)
