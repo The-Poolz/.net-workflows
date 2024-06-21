@@ -50,12 +50,3 @@ jobs:
         recreate: true
         header: Diagram URL
         path: ${{github.workspace}}/uml-diagram-report.txt
-
-    - name: Commit and Push changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add diagrams/
-        git commit -m "Add generated UML diagrams" || echo "No changes to commit"
-        git pull --rebase origin ${{ github.head_ref }}
-        git push origin HEAD:${{ github.head_ref }}
