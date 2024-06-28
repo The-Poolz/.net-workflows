@@ -2,6 +2,12 @@ name: Generate UML Diagram
 
 on:
   workflow_call:
+    inputs:
+      exclude-paths:
+        type: string
+        required: false
+        default: ''
+        description: 'Paths to exclude from UML generation'
 
 jobs:
 
@@ -32,7 +38,7 @@ jobs:
 
     - name: Generate UML Diagram
       run: |
-        puml-gen ./ ./diagrams/ -dir -allInOne -createAssociation -excludePaths **/tests
+        puml-gen ./ ./diagrams/ -dir -allInOne -createAssociation -excludePaths ${{ inputs.exclude-paths }}
 
     - name: Download plantuml
       run: pip install plantuml
