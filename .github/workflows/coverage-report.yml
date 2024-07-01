@@ -2,6 +2,10 @@ name: Coverage Report
 
 on:
   workflow_call:
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_PACKAGE_USER_NAME: ${{ github.actor }}
+  GITHUB_PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   Coverage-Report:
