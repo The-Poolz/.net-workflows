@@ -1,10 +1,10 @@
-name: Build and Test
+name: .NET build and test
 
 on:
   workflow_call:
 
 jobs:
-  Build:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,7 +13,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
 
     - name: Restore dependencies
       run: dotnet restore
