@@ -1,0 +1,73 @@
+name: Publish
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    env:
+      NUGET_SOURCE: https://api.nuget.org/v3/index.json
+      ARTIFACTS_DIR: artifacts
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Create artifacts directory
+        run: mkdir -p "$ARTIFACTS_DIR"
+
+      - name: Pack all projects under src/*
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Find all .csproj in src, excluding explicit test projects
+          mapfile -d '' projects < <(find src -type f -name '*.csproj' \
+            -not -name '*Test.csproj' -not -name '*Tests.csproj' -print0)
+
+          if (( ${#projects[@]} == 0 )); then
+            echo "No packable projects found under src/"
+            exit 1
+          fi
+
+          for csproj in "${projects[@]}"; do
+            echo "::group::Packing $csproj"
+            dotnet pack "$csproj" \
+              --configuration Release \
+              --output "$ARTIFACTS_DIR" \
+              -p:IncludeSymbols=true \
+              -p:SymbolPackageFormat=snupkg
+            echo "::endgroup::"
+          done
+
+          echo "Packed files:"
+          ls -1 "$ARTIFACTS_DIR"
+
+      - name: Push NuGet packages (.nupkg)
+        if: ${{ hashFiles('artifacts/*.nupkg') != '' }}
+        run: |
+          dotnet nuget push artifacts/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+      
+      - name: Push symbol packages (.snupkg)
+        if: ${{ hashFiles('artifacts/*.snupkg') != '' }}
+        run: |
+          dotnet nuget push artifacts/*.snupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
