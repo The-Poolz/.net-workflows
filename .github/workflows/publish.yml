@@ -26,6 +26,24 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build all projects under src/*
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' projects < <(find src -type f -name '*.csproj' \
+            -not -name '*Test.csproj' -not -name '*Tests.csproj' -print0)
+
+          for csproj in "${projects[@]}"; do
+            echo "::group::Building $csproj"
+            dotnet build "$csproj" \
+              --configuration Release \
+              --no-restore
+            echo "::endgroup::"
+          done
+
       - name: Create artifacts directory
         run: mkdir -p "$ARTIFACTS_DIR"
 
@@ -47,6 +65,7 @@ jobs:
             echo "::group::Packing $csproj"
             dotnet pack "$csproj" \
               --configuration Release \
+              --no-build \
               --output "$ARTIFACTS_DIR" \
               -p:IncludeSymbols=true \
               -p:SymbolPackageFormat=snupkg
